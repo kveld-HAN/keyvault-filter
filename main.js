@@ -25,8 +25,6 @@ function Reveal(query) {
 }
 
 function CreateQueryInput() {
-	const target = document.querySelector('ul[role="toolbar"]');
-
 	const li = document.createElement('li');
 	li.setAttribute("role", "presentation");
 	li.setAttribute("class", "azc-toolbar-item azc-toolbarButton fxs-commandBar-item fxs-vivaresize");
@@ -44,17 +42,32 @@ function CreateQueryInput() {
 	li.appendChild(divInput);
 
 	input.addEventListener('input', (e) => Reveal(e.target.value));
-	target.appendChild(li, target);
+	return li;
 }
 
-document.addEventListener('readystatechange', e => {
-    if (e.target.readyState === "complete" && window.location.href.match(".+(?=\/secrets$).+")) {
-		setTimeout( function(){
-			CreateQueryInput();
-		}, 1000);
-	console.log("Injected Azure Key-Vault Filter");
-    }
-});
+function AddLoadMoreEvent()
+{
+	var target = document.querySelector("div.azc-grid-footer a[role='button']");
+	var input = document.querySelector("input[id='filter']");
+	target.addEventListener("click", function(){
+		var interval = setInterval(function() {
+			if(!jQuery.Active) 
+				Reveal(input.value);
+			else
+				clearInterval(interval);
+		}, 100);
+	});
+}
+
+setTimeout(function(){
+	if(window.location.href.match(".+(?=\/secrets$).+"))
+	{
+		const target = document.querySelector('ul[role="toolbar"]');
+		const filterInput = CreateQueryInput();
+		target.appendChild(filterInput, target);
+		AddLoadMoreEvent();
+	}
+}, 1000);
 `;
 
 function InjectScript(code) {
@@ -64,4 +77,9 @@ function InjectScript(code) {
 	script.remove();
 }
 
-InjectScript(code);
+document.addEventListener('readystatechange', event => { 
+    if (event.target.readyState === "complete") {
+		InjectScript(code);
+		console.log("Injected Azure Key-Vault Filter");
+    }
+});
