@@ -67,6 +67,7 @@ function InjectFilter()
 	target.appendChild(filterInput, target);
 	AddLoadMoreEventListener();
 }
+
 function EmptyInputFilter()
 {
 	document.querySelector("li[id='input-filter'] input").value = ""
