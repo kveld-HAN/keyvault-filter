@@ -28,7 +28,7 @@ function CreateQueryInput() {
 	const li = document.createElement('li');
 	li.setAttribute("role", "presentation");
 	li.setAttribute("class", "azc-toolbar-item azc-toolbarButton fxs-commandBar-item fxs-vivaresize");
-
+	li.setAttribute("id", "input-filter");
 	const divInput = document.createElement('div');
 	divInput.setAttribute("class", "azc-toolbarButton-container fxs-portal-hover");
 
@@ -45,7 +45,7 @@ function CreateQueryInput() {
 	return li;
 }
 
-function AddLoadMoreEvent()
+function AddLoadMoreEventListener()
 {
 	var target = document.querySelector("div.azc-grid-footer a[role='button']");
 	var input = document.querySelector("input[id='filter']");
@@ -59,14 +59,43 @@ function AddLoadMoreEvent()
 	});
 }
 
+function InjectFilter()
+{
+
+	const target = document.querySelector('ul[role="toolbar"]');
+	const filterInput = CreateQueryInput();
+	target.appendChild(filterInput, target);
+	AddLoadMoreEventListener();
+}
+function EmptyInputFilter()
+{
+	document.querySelector("li[id='input-filter'] input").value = ""
+}
+
 setTimeout(function(){
-	if(window.location.href.match(".+(?=\/secrets$).+"))
-	{
-		const target = document.querySelector('ul[role="toolbar"]');
-		const filterInput = CreateQueryInput();
-		target.appendChild(filterInput, target);
-		AddLoadMoreEvent();
+	InjectFilter();
+
+	let lastUrl = location.href; 
+	new MutationObserver(() => {
+	const url = location.href;
+	if (url !== lastUrl) {
+		lastUrl = url;
+		{
+			if(!document.querySelector("li[id='input-filter']"))
+			{
+				if(location.href.match(".+(?=\/secrets$).+"))
+				{
+					InjectFilter();
+				}
+			}
+			else
+			{
+				EmptyInputFilter();
+				ResetRows();
+			}
+		}
 	}
+	}).observe(document, {subtree: true, childList: true});
 }, 1000);
 `;
 
